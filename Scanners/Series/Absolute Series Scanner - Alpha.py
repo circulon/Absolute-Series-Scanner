@@ -26,8 +26,7 @@ ignore_files_rx = ['[-\._ ]sample', 'sample[-\._ ]', '-Recap\.', 'OST', 'soundtr
 #ignore_exts     = ['ssa', 'srt', 'ass', 'jpg', 'png', 'gif', 'mp3', 'wav', 'flac', 'pdf', 'db', 'nfo', 'ds_store', 'txt', 'zip', 'ini', "dvdmedia", "log", "bat", 'idx', 'sub', 'vob', 'bup', 'id']    # extensions dropped no warning (skipped list would be too long if showed)
 video_exts      = [ '3g2', '3gp', 'asf', 'asx', 'avc', 'avi', 'avs', 'bin', 'bivx', 'divx', 'dv', 'dvr-ms', 'evo', 'fli', 'flv', 'img', 'iso', 'm2t', 'm2ts', 'm2v', 'm4v', 'mkv', 'mov', 'mp4', # DVD: 'ifo', 'bup', 'vob'
   'mpeg', 'mpg', 'mts', 'nrg', 'nsv', 'nuv', 'ogm', 'ogv', 'tp', 'pva', 'qt', 'rm', 'rmvb', 'sdp', 'swf', 'svq3', 'strm', 'ts', 'ty', 'vdr', 'viv', 'vp3', 'wmv', 'wpl', 'wtv', 'xsp', 'xvid', 'webm', 'ifo']
-FILTER_CHARS    = "\\/:*?<>|~;_." #.                                                                             # Windows file naming limitations + "~-,._" + ';' as plex cut title at this for the agent
-whack_pre_clean = ["x264-FMD Release", "x264-h65", "x264-mSD", "x264-BAJSKORV", "x264-MgB", "x264-SYS", "x264-FQM", "x264-ASAP", "x264-QCF", "x264-W4F", 'x264-w4f', 
+FILTER_CHARS    = "\\/:*?<>|~;_." #.                                                                             # Windows file naming limitations + "~-,._" + ';' as plex cut title at this for the agentwhack_pre_clean = ["x264-FMD Release", "x264-h65", "x264-mSD", "x264-BAJSKORV", "x264-MgB", "x264-SYS", "x264-FQM", "x264-ASAP", "x264-QCF", "x264-W4F", 'x264-w4f', 
   'x264-2hd', "x264-ASAP", 'x264-bajskorv', 'x264-batv', "x264-BATV", "x264-EXCELLENCE", "x264-KILLERS", "x264-LOL", 'x264-MgB', 'x264-qcf', 'x264-SnowDoN', 'x264-xRed', 
   "H.264-iT00NZ", "H.264.iT00NZ", 'H264-PublicHD', "H.264-BS", 'REAL.HDTV', "WEB.DL", "H_264_iT00NZ", "www.crazy-torrent.com", "ReourceRG Kids Release", "By UniversalFreedom", 
   "XviD-2HD", "XviD-AFG", "xvid-aldi", 'xvid-asap', "XviD-AXED", "XviD-BiA-mOt", 'xvid-fqm', "xvid-futv", 'xvid-killer', "XviD-LMAO", 'xvid-pfa',
@@ -199,10 +198,11 @@ def Scan(path, files, mediaList, subdirs, language=None, root=None, **kwargs): #
       if re.match(rx, os.path.basename(subdir), re.IGNORECASE): subdirs.remove(subdir);  Log("\"%s\" match ignore_dirs_rx: \"%s\"" % (subdir, rx));  break  #skip dirs to be ignored
   reverse_path = list(reversed(Utils.SplitPath(path)))
   for file in files:
-    if os.path.splitext(file)[1].lstrip('.').lower() not in video_exts:  files.remove(file);  continue
-    for rx in ignore_files_rx:                                                                                        # Filter trailers and sample files
-      match=re.match(rx, file, re.IGNORECASE)
-      if match:  Log("File:   '%s' match ignore_files_rx: '%s'" % (file, rx)); files.remove(file);  break
+    ext = os.path.splitext(file)[1].lstrip('.').lower()
+    if ext not in video_exts:
+      for rx in ignore_files_rx:                                                                                        # Filter trailers and sample files
+        if re.match(rx, file, re.IGNORECASE):  Log("File:   '%s' match ignore_files_rx: '%s'" % (file, rx)); files.remove(file);  break
+      else:  Log("file: '%s', ext: '%s' not in video_ext" % (file, ext));  files.remove(file);  continue
     else:
       with open(os.path.join(LOG_PATH, FILELIST), 'a') as log_file:  log_file.write(file + "\n")
   if len(files)==0:  return  # If direct scanner call on folder (not root) then skip if no files as will be called on subfolders too
